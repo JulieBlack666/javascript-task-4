@@ -50,7 +50,7 @@ function getEmitter() {
          */
         off: function (event, context) {
             for (let e in events) {
-                if (e.startsWith(event)) {
+                if (e === event || e.startsWith(event + '.')) {
                     events[e].delete(context);
                 }
             }
