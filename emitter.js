@@ -4,13 +4,23 @@
  * Сделано задание на звездочку
  * Реализованы методы several и through
  */
-const isStar = true;
+const isStar = false;
+
+function handle(contexts) {
+    for (let [context, handlers] of contexts) {
+        for (let handler of handlers) {
+            handler.apply(context);
+        }
+    }
+}
 
 /**
  * Возвращает новый emitter
  * @returns {Object}
  */
 function getEmitter() {
+    let events = new Map();
+
     return {
 
         /**
@@ -18,26 +28,51 @@ function getEmitter() {
          * @param {String} event
          * @param {Object} context
          * @param {Function} handler
+         * @returns {Object}
          */
         on: function (event, context, handler) {
-            console.info(event, context, handler);
+            if (!events[event]) {
+                events[event] = new Map();
+            }
+            if (!events[event].get(context)) {
+                events[event].set(context, []);
+            }
+            events[event].get(context).push(handler);
+
+            return this;
         },
 
         /**
          * Отписаться от события
          * @param {String} event
          * @param {Object} context
+         * @returns {Object}
          */
         off: function (event, context) {
-            console.info(event, context);
+            for (let e in events) {
+                if (e.startsWith(event)) {
+                    events[e].delete(context);
+                }
+            }
+
+            return this;
         },
 
         /**
          * Уведомить о событии
          * @param {String} event
+         * @returns {Object}
          */
         emit: function (event) {
-            console.info(event);
+            while (event !== '') {
+                const contexts = events[event];
+                if (contexts) {
+                    handle(contexts);
+                }
+                event = event.substring(0, event.lastIndexOf('.'));
+            }
+
+            return this;
         },
 
         /**
